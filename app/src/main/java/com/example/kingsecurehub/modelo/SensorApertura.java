@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+
 public class SensorApertura extends Sensor{
 
 
@@ -36,6 +38,18 @@ public class SensorApertura extends Sensor{
                 "codigo="+getCodigo()+"\n"+
                 '}';
     }
+
+    @Override
+    public int getEstadoInt() {
+        if(getEstado()==EstadoSApertura.DISCONNECTED)
+            return 0;
+        if(getEstado()==EstadoSApertura.CLOSE)
+            return 1;
+
+            return 2;
+
+    }
+
 
     public static SensorApertura fromJson(JSONObject jsonObj){
 

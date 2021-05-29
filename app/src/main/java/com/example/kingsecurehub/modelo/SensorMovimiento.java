@@ -21,6 +21,17 @@ public class SensorMovimiento extends Sensor {
         this.estado = estado;
     }
 
+    @Override
+    public int getEstadoInt() {
+        if(getEstado()==EstadoSMovimiento.DISCONNECTED)
+            return 0;
+        if(getEstado()==EstadoSMovimiento.NO_MOTION)
+            return 1;
+
+        return 2;
+
+    }
+
 
     public static SensorMovimiento fromJson(JSONObject jsonObj){
 

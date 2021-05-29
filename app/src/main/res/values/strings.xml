@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">KingSecureHub</string>
+    <string-array name="typeSensor">
+        <item>MOVIMIENTO</item>
+        <item>APERTURA</item>
+    </string-array>
 </resources>

@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+
 public class Actuador extends Dispositivo {
 
     private EstadoActuador estado;
@@ -37,7 +39,7 @@ public class Actuador extends Dispositivo {
             else if (estado==1)
                 actuador.setEstado(EstadoActuador.OFF);
             else
-                actuador.setEstado(EstadoActuador.DISCONNECTED);
+                actuador.setEstado(EstadoActuador.ON);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -47,6 +49,29 @@ public class Actuador extends Dispositivo {
 
         return actuador;
     }
+
+    @Override
+    public int getEstadoInt() {
+        if(getEstado()==EstadoActuador.DISCONNECTED)
+            return 0;
+        if(getEstado()==EstadoActuador.OFF)
+            return 1;
+        return 2;
+
+    }
+
+    public byte[] toJsonByte() throws JSONException, UnsupportedEncodingException {
+        JSONObject obj = new JSONObject();
+        obj.put("codigo",getCodigo());
+        obj.put("nombre",getNombre());
+        obj.put("estado",getEstadoInt());
+
+        final String requestBody = obj.toString();
+        return  requestBody.getBytes("utf-8");
+
+    }
+
+
 
     @NonNull
     @Override

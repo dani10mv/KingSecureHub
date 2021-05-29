@@ -2,7 +2,9 @@ package com.example.kingsecurehub.modelo;
 
 import com.google.gson.annotations.SerializedName;
 
-public abstract class Dispositivo {
+import java.io.Serializable;
+
+public abstract class Dispositivo implements Serializable {
     @SerializedName("codigo")
     private String codigo;
 
@@ -32,4 +34,9 @@ public abstract class Dispositivo {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
+
+    public int getEstadoInt(){
+        return 0;
+    }
+
 }
