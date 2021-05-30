@@ -71,7 +71,7 @@ public class ActuadorListAdapter  extends ArrayAdapter<Actuador>   {
             public void onClick(View view) {
                 String codigoActuador=  device.getCodigo();
 
-                JsonObjectRequest actuadoresDeleteRequest = new JsonObjectRequest(Request.Method.DELETE, "https://kingserve.herokuapp.com/actuador/delete/"+codigoActuador, null,
+                JsonObjectRequest actuadoresDeleteRequest = new JsonObjectRequest(Request.Method.DELETE, HostingUrl.getUrl()+"/actuador/delete/"+codigoActuador, null,
                         new Response.Listener<JSONObject>() {
 
                             @Override

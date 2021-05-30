@@ -40,7 +40,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
     <TextView
-        android:id="@+id/textView10"
+        android:id="@+id/tvEstadoUpdate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="70dp"
@@ -53,8 +53,8 @@
         android:layout_width="252dp"
         android:layout_height="20dp"
         android:layout_marginTop="18dp"
-        app:layout_constraintStart_toStartOf="@+id/textView10"
-        app:layout_constraintTop_toBottomOf="@+id/textView10" />
+        app:layout_constraintStart_toStartOf="@+id/tvEstadoUpdate"
+        app:layout_constraintTop_toBottomOf="@+id/tvEstadoUpdate" />
 
     <Button
         android:id="@+id/btnUpdate"
@@ -70,6 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="28dp"
+        android:onClick="onClickBack"
         android:text="Atrás"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/spEstadoUpdate" />

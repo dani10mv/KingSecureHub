@@ -170,7 +170,7 @@ public class AddDeviceActivity extends AppCompatActivity {
     public void addNewSensorRequest(final Sensor sensor) {
 
 
-        JsonObjectRequest addSensorRequest = new JsonObjectRequest(Request.Method.POST, "https://kingserve.herokuapp.com/sensor/add", null,
+        JsonObjectRequest addSensorRequest = new JsonObjectRequest(Request.Method.POST, HostingUrl.getUrl()+"/sensor/add", null,
                 new Response.Listener<JSONObject>() {
 
                     @Override
@@ -217,7 +217,7 @@ public class AddDeviceActivity extends AppCompatActivity {
     public void addNewActuadorRequest(final Actuador actuador) {
 
 
-        JsonObjectRequest addSensorRequest = new JsonObjectRequest(Request.Method.POST, "https://kingserve.herokuapp.com/actuador/add", null,
+        JsonObjectRequest addSensorRequest = new JsonObjectRequest(Request.Method.POST, HostingUrl.getUrl()+"/actuador/add", null,
                 new Response.Listener<JSONObject>() {
 
                     @Override

@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -43,7 +44,9 @@ public class UpdateActivity extends AppCompatActivity {
     private Button btnUpdate;
     private Button btnBack;
     private EditText etName;
+    private TextView tvEstado;
     private boolean isSensor;
+
 
     private List<Sensor> sensores;
     private List<Actuador> actuadores;
@@ -67,6 +70,8 @@ public class UpdateActivity extends AppCompatActivity {
         btnUpdate=findViewById(R.id.btnUpdate);
         etName=findViewById(R.id.etNameUpdate);
         spEstado = findViewById(R.id.spEstadoUpdate);
+        tvEstado = findViewById(R.id.tvEstadoUpdate);
+
 
 
 
@@ -91,27 +96,22 @@ public class UpdateActivity extends AppCompatActivity {
             device=sensor;
 
             isSensor=true;
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                    this, android.R.layout.simple_spinner_item, spinnerArray);
+
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+            spEstado.setAdapter(adapter);
 
         }else//es actuador
         {
             isSensor=false;
             Actuador actuador=(Actuador) getIntent().getSerializableExtra("actuador");
             device=actuador;
-            spinnerArray.add("DISCONECTED");
-            spinnerArray.add("OFF");
-            spinnerArray.add("ON");
-
+            spEstado.setVisibility(View.INVISIBLE);
+            tvEstado.setVisibility(View.INVISIBLE);
 
         }
-
-        System.out.println(spinnerArray);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                this, android.R.layout.simple_spinner_item, spinnerArray);
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        spEstado.setAdapter(adapter);
 
         etName.setText(device.getNombre());
 
@@ -124,6 +124,7 @@ public class UpdateActivity extends AppCompatActivity {
         if(! checkName())
             return;
         Dispositivo device = null ;
+        Intent i  = new Intent(this,MainActivity.class);
         if(isSensor){
             Sensor sensor =(Sensor) getIntent().getSerializableExtra("sensor");
             if(sensor.getTipoSensor().toUpperCase().equals("APERTURA")) {
@@ -143,18 +144,19 @@ public class UpdateActivity extends AppCompatActivity {
                 sensores.set(position,sensorMovimiento);
                 sensor=sensorMovimiento;
             }
-            updateSensorRequest(sensor);
+            i.putExtra("updateSensor",sensor);
 
         }else{ //actuador
             Actuador actuador=(Actuador) getIntent().getSerializableExtra("actuador");
-            EstadoActuador estado = EstadoActuador.valueOf(spEstado.getSelectedItem().toString());
-            actuador.setEstado(estado);
+
             actuador.setNombre(etName.getText().toString());
-            actuadores.set(position,actuador);
+
+            i.putExtra("updateActuador",(Serializable) actuador);
         }
+        i.putExtra("sensores",(Serializable) sensores);
+        i.putExtra("actuadores",(Serializable) actuadores);
 
-
-
+        startActivity(i);
 
     }
 
@@ -165,124 +167,15 @@ public class UpdateActivity extends AppCompatActivity {
     }
 
 
-    public void updateSensorRequest(final Sensor sensor) {
+    public void onClickBack(View view){
 
+        Intent i = new Intent(this,MainActivity.class);
+        i.putExtra("sensores",(Serializable) sensores);
+        i.putExtra("actuadores",(Serializable) actuadores);
+        startActivity(i);
 
-        JsonArrayRequest updateSensorRequest = new JsonArrayRequest(Request.Method.PUT, "https://kingserve.herokuapp.com/sensor/update", null,
-                new Response.Listener<JSONArray>() {
-
-                    @Override
-                    public void onResponse(JSONArray response) {
-
-                        try {
-                            for (int i = 0; i < response.length(); i++) {
-                                String codigoActuador = response.getString(i);
-                                Actuador actuador= null;
-                                for(Actuador a : actuadores){
-                                    if(a.getCodigo().equals(codigoActuador)){
-                                        actuador=a;
-                                        break;
-                                    }
-                                }
-
-                                if(actuador.getEstado()!=EstadoActuador.DISCONNECTED){
-                                    actuador.setEstado(EstadoActuador.ON);
-                                    updateActuadorRequest(actuador);
-
-                                }
-
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        Toast.makeText(getApplicationContext(),
-                                "Error", Toast.LENGTH_LONG).show();
-                    }
-                }) {
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
-            }
-
-            @Override
-            public byte[] getBody() {
-                byte[] body= null;
-                try {
-                    body =sensor.toJsonByte();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return body;
-            }
-        };
-        requestQueue.add(updateSensorRequest);
     }
 
 
-    public void updateActuadorRequest(final Actuador actuador) {
-
-
-        JsonObjectRequest updateActuadorRequest = new JsonObjectRequest(Request.Method.PUT, "https://kingserve.herokuapp.com/actuador/update", null,
-                new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-
-                        int pos =0;
-                        for (Actuador a : actuadores){
-                            if(a.getCodigo().equals(actuador.getCodigo())) {
-                                actuadores.set(pos, actuador);
-                                Intent i =new Intent(UpdateActivity.this,MainActivity.class);
-                                i.putExtra("sensores",(Serializable) sensores);
-                                i.putExtra("actuadores",(Serializable) actuadores);
-                                startActivity(i);
-                                return;
-                            }
-                            pos++;
-                        }
-
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        Toast.makeText(getApplicationContext(),
-                                "Error", Toast.LENGTH_LONG).show();
-                    }
-                }) {
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
-            }
-
-            @Override
-            public byte[] getBody() {
-                byte[] body= null;
-                try {
-                    body =actuador.toJsonByte();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                return body;
-            }
-        };
-        requestQueue.add(updateActuadorRequest);
-    }
 
 }

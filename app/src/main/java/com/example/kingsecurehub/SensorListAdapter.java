@@ -81,7 +81,7 @@ public class SensorListAdapter  extends ArrayAdapter<Sensor> {
             public void onClick(View view) {
                 String codigoSensor =  device.getCodigo();
 
-                JsonObjectRequest sensoresMovimientoRequest = new JsonObjectRequest(Request.Method.DELETE, "https://kingserve.herokuapp.com/sensor/delete/"+codigoSensor, null,
+                JsonObjectRequest deleteSensorRequest = new JsonObjectRequest(Request.Method.DELETE, HostingUrl.getUrl()+"/sensor/delete/"+codigoSensor, null,
                         new Response.Listener<JSONObject>() {
 
                             @Override
@@ -100,7 +100,7 @@ public class SensorListAdapter  extends ArrayAdapter<Sensor> {
                             }
                         });
 
-                requestQueue.add(sensoresMovimientoRequest);
+                requestQueue.add(deleteSensorRequest);
 
             }
         });

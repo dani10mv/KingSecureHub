@@ -1,12 +1,10 @@
 package com.example.kingsecurehub;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -15,13 +13,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.kingsecurehub.modelo.*;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -33,10 +31,11 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Queue;
 
+//https://rapid-mini-screwdriver.glitch.me/
 public class MainActivity extends AppCompatActivity {
 
     private Context context;
@@ -48,8 +47,9 @@ public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton addButton, addSensorButton, addAlertButton;
 
-    private ArrayAdapter<Sensor> mSensorAdapter;
+    private SensorListAdapter mSensorAdapter;
     private ActuadorListAdapter mActuadorAdapter;
+    private Queue<JsonRequest> requests = new LinkedList<>();
 
     private RequestQueue requestQueue;
     private List<Sensor> sensores = new ArrayList<>();
@@ -72,15 +72,14 @@ public class MainActivity extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(getApplicationContext());
 
 
-
         lvActuadores.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                Actuador actuador =  (Actuador) adapterView.getItemAtPosition(i);
+                Actuador actuador = (Actuador) adapterView.getItemAtPosition(i);
 
-                Intent intent = new Intent(MainActivity.this,UpdateActivity.class);
-                intent.putExtra("actuador",actuador);
+                Intent intent = new Intent(MainActivity.this, UpdateActivity.class);
+                intent.putExtra("actuador", actuador);
                 intent.putExtra("sensores", (Serializable) sensores);
                 intent.putExtra("actuadores", (Serializable) actuadores);
 
@@ -88,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 
 
         if (getIntent().hasExtra("sensores")) {
@@ -102,6 +100,16 @@ public class MainActivity extends AppCompatActivity {
             getSensoresMovimiento();
             getActuadores();
         }
+
+        if (getIntent().hasExtra("updateSensor")) {
+            Sensor updateSensor = (Sensor) getIntent().getSerializableExtra("updateSensor");
+            JsonRequest req = getupdateSensorRequest(updateSensor);
+            requests.add(req);
+        } else if (getIntent().hasExtra("updateActuador")) {
+            Actuador updateActuador = (Actuador) getIntent().getSerializableExtra("updateActuador");
+            updateActuadorRequest(updateActuador);
+        }
+
 
         System.out.println(sensores.size());
 
@@ -121,17 +129,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                Sensor sensor =  (Sensor) adapterView.getItemAtPosition(i);
+                Sensor sensor = (Sensor) adapterView.getItemAtPosition(i);
 
-                Intent intent = new Intent(MainActivity.this,UpdateActivity.class);
-                intent.putExtra("sensor",sensor);
+                Intent intent = new Intent(MainActivity.this, UpdateActivity.class);
+                intent.putExtra("sensor", sensor);
                 intent.putExtra("sensores", (Serializable) sensores);
                 intent.putExtra("actuadores", (Serializable) actuadores);
-                intent.putExtra("position",i);
+                intent.putExtra("position", i);
                 startActivity(intent);
 
             }
         });
+
+        if (getIntent() == null) {
+            System.out.println("creamos hilo");
+            RequestController rq = new RequestController(this, context, mActuadorAdapter, mSensorAdapter, requests);
+            Thread t = new RequestThread(rq);
+            t.start();
+        }
 
 
     }
@@ -139,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getSensoresApertura() {
 
-        JsonArrayRequest sensoresAperturaRequest = new JsonArrayRequest(Request.Method.GET, "https://kingserve.herokuapp.com/sensores/apertura", null,
+        JsonArrayRequest sensoresAperturaRequest = new JsonArrayRequest(Request.Method.GET, HostingUrl.getUrl() + "/sensores/apertura", null,
                 new Response.Listener<JSONArray>() {
 
                     @Override
@@ -181,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getSensoresMovimiento() {
 
-        JsonArrayRequest sensoresMovimientoRequest = new JsonArrayRequest(Request.Method.GET, "https://kingserve.herokuapp.com/sensores/movimiento", null,
+        JsonArrayRequest sensoresMovimientoRequest = new JsonArrayRequest(Request.Method.GET, HostingUrl.getUrl() + "/sensores/movimiento", null,
                 new Response.Listener<JSONArray>() {
 
                     @Override
@@ -222,11 +237,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
     public void getActuadores() {
 
-        JsonArrayRequest actuadoresRequest = new JsonArrayRequest(Request.Method.GET, "https://kingserve.herokuapp.com/actuadores", null,
+        JsonArrayRequest actuadoresRequest = new JsonArrayRequest(Request.Method.GET, HostingUrl.getUrl() + "/actuadores", null,
                 new Response.Listener<JSONArray>() {
 
                     @Override
@@ -313,5 +326,123 @@ public class MainActivity extends AppCompatActivity {
         startActivity(i);
 
     }
+
+
+    public JsonArrayRequest getupdateSensorRequest(final Sensor sensor) {
+
+
+        JsonArrayRequest updateSensorRequest = new JsonArrayRequest(Request.Method.PUT, HostingUrl.getUrl() + "/sensor/update", null,
+                new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                        try {
+                            for (int i = 0; i < response.length(); i++) {
+                                String codigoActuador = response.getString(i);
+                                Actuador actuador = null;
+                                for (Actuador a : actuadores) {
+                                    if (a.getCodigo().equals(codigoActuador)) {
+                                        actuador = a;
+                                        break;
+                                    }
+                                }
+
+                                if (actuador.getEstado() != EstadoActuador.DISCONNECTED) {
+                                    actuador.setEstado(EstadoActuador.ON);
+                                    updateActuadorRequest(actuador);
+
+                                }
+
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        mSensorAdapter.notifyDataSetChanged();
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        Toast.makeText(getApplicationContext(),
+                                "Error", Toast.LENGTH_LONG).show();
+                    }
+                }) {
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+            @Override
+            public byte[] getBody() {
+                byte[] body = null;
+                try {
+                    body = sensor.toJsonByte();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                return body;
+            }
+        };
+        return updateSensorRequest;
+    }
+
+
+    public void updateActuadorRequest(final Actuador actuador) {
+
+
+        JsonObjectRequest updateActuadorRequest = new JsonObjectRequest(Request.Method.PUT, HostingUrl.getUrl() + "/actuador/update", null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        int pos = 0;
+                        for (Actuador a : actuadores) {
+                            if (a.getCodigo().equals(actuador.getCodigo())) {
+                                actuadores.set(pos, actuador);
+                                mActuadorAdapter.notifyDataSetChanged();
+                                return;
+                            }
+                            pos++;
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                        Toast.makeText(getApplicationContext(),
+                                "Error", Toast.LENGTH_LONG).show();
+                    }
+                }) {
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+
+            @Override
+            public byte[] getBody() {
+                byte[] body = null;
+                try {
+                    body = actuador.toJsonByte();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                return body;
+            }
+        };
+        requestQueue.add(updateActuadorRequest);
+    }
+
 
 }
