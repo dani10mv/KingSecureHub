@@ -21,6 +21,8 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.kingsecurehub.exceptions.DispositivoExistenteException;
+import com.example.kingsecurehub.exceptions.DispositivoNoExistenteException;
 import com.example.kingsecurehub.modelo.*;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -172,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                                 casa.addSensor(sensorApertura);
 
                             }
-                        } catch (JSONException e) {
+                        } catch (JSONException | DispositivoExistenteException e) {
                             e.printStackTrace();
                         }
 
@@ -214,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                                 casa.addSensor(sensorMovimiento);
 
                             }
-                        } catch (JSONException e) {
+                        } catch (JSONException | DispositivoExistenteException e) {
                             e.printStackTrace();
                             System.out.println("mi putisima madre");
                         }
@@ -257,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                                 casa.addActuador(actuador);
 
                             }
-                        } catch (JSONException e) {
+                        } catch (JSONException | DispositivoExistenteException e) {
                             e.printStackTrace();
                             System.out.println("mi putisima madre");
                         }
@@ -405,7 +407,11 @@ public class MainActivity extends AppCompatActivity {
                         int pos = 0;
                         for (Actuador a : casa.getActuadores()) {
                             if (a.getCodigo().equals(actuador.getCodigo())) {
-                                casa.updateActuador(actuador);
+                                try {
+                                    casa.updateActuador(actuador);
+                                } catch (DispositivoNoExistenteException e) {
+                                    e.printStackTrace();
+                                }
                                 mActuadorAdapter.notifyDataSetChanged();
                                 return;
                             }

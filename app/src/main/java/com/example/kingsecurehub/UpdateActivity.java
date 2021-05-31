@@ -20,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.kingsecurehub.exceptions.DispositivoNoExistenteException;
 import com.example.kingsecurehub.modelo.Actuador;
 import com.example.kingsecurehub.modelo.Dispositivo;
 import com.example.kingsecurehub.modelo.EstadoActuador;
@@ -133,7 +134,11 @@ public class UpdateActivity extends AppCompatActivity {
                 SensorApertura newSensor = (SensorApertura) getIntent().getSerializableExtra("sensor");
                 newSensor.setEstado(estado);
                 newSensor.setNombre(etName.getText().toString());
-                casa.updateSensor(newSensor);
+                try {
+                    casa.updateSensor(newSensor);
+                } catch (DispositivoNoExistenteException e) {
+                    e.printStackTrace();
+                }
                 sensor=newSensor;
 
 
@@ -142,7 +147,11 @@ public class UpdateActivity extends AppCompatActivity {
                 SensorMovimiento sensorMovimiento = (SensorMovimiento) getIntent().getSerializableExtra("sensor");
                 sensorMovimiento.setEstado(estado);
                 sensorMovimiento.setNombre(etName.getText().toString());
-                casa.updateSensor(sensorMovimiento);
+                try {
+                    casa.updateSensor(sensorMovimiento);
+                } catch (DispositivoNoExistenteException e) {
+                    e.printStackTrace();
+                }
                 sensor=sensorMovimiento;
             }
             i.putExtra("updateSensor",sensor);

@@ -18,6 +18,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.kingsecurehub.exceptions.DispositivoExistenteException;
 import com.example.kingsecurehub.modelo.Actuador;
 import com.example.kingsecurehub.modelo.EstadoActuador;
 import com.example.kingsecurehub.modelo.EstadoSApertura;
@@ -174,7 +175,11 @@ public class AddDeviceActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
 
-                        casa.addSensor(sensor);
+                        try {
+                            casa.addSensor(sensor);
+                        } catch (DispositivoExistenteException e) {
+                            e.printStackTrace();
+                        }
                         Intent i = new Intent(AddDeviceActivity.this, MainActivity.class);
                         i.putExtra("casa",(Serializable) casa);
                         startActivity(i);
@@ -223,8 +228,12 @@ public class AddDeviceActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
 
                     @Override
-                    public void onResponse(JSONObject response) {
-                        casa.addActuador(actuador);
+                    public void onResponse(JSONObject response){
+                        try {
+                            casa.addActuador(actuador);
+                        } catch (DispositivoExistenteException e) {
+                            e.printStackTrace();
+                        }
                         Intent i = new Intent(AddDeviceActivity.this, MainActivity.class);
                         i.putExtra("casa",(Serializable) casa);
                         startActivity(i);
