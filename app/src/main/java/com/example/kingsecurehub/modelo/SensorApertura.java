@@ -1,5 +1,6 @@
 package com.example.kingsecurehub.modelo;
 
+import com.example.kingsecurehub.R;
 import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONException;
@@ -7,15 +8,17 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
-public class SensorApertura extends Sensor{
-
+public class SensorApertura extends Sensor {
 
 
     private EstadoSApertura estado;
 
-    public SensorApertura(){
+    public SensorApertura() {
         super("Apertura");
-    };
+    }
+
+    ;
+
     public SensorApertura(String codigo, String nombre) {
         super(codigo, nombre, "Apertura");
 
@@ -32,26 +35,26 @@ public class SensorApertura extends Sensor{
 
     @Override
     public String toString() {
-        return "SensorApertura{" +"\n"+
-                "estado=" + estado +"\n"+
-                "nombre="+getNombre()+"\n"+
-                "codigo="+getCodigo()+"\n"+
+        return "SensorApertura{" + "\n" +
+                "estado=" + estado + "\n" +
+                "nombre=" + getNombre() + "\n" +
+                "codigo=" + getCodigo() + "\n" +
                 '}';
     }
 
     @Override
     public int getEstadoInt() {
-        if(getEstado()==EstadoSApertura.DISCONNECTED)
+        if (getEstado() == EstadoSApertura.DISCONNECTED)
             return 0;
-        if(getEstado()==EstadoSApertura.CLOSE)
+        if (getEstado() == EstadoSApertura.CLOSE)
             return 1;
 
-            return 2;
+        return 2;
 
     }
 
 
-    public static SensorApertura fromJson(JSONObject jsonObj){
+    public static SensorApertura fromJson(JSONObject jsonObj) {
 
         SensorApertura sensor = new SensorApertura();
 
@@ -59,11 +62,11 @@ public class SensorApertura extends Sensor{
             sensor.setCodigo(jsonObj.getString("codigo"));
             sensor.setNombre(jsonObj.getString("nombre"));
 
-            int estado= jsonObj.getInt("estado");
+            int estado = jsonObj.getInt("estado");
 
-            if(estado==0)
+            if (estado == 0)
                 sensor.setEstado(EstadoSApertura.DISCONNECTED);
-            else if (estado==1)
+            else if (estado == 1)
                 sensor.setEstado(EstadoSApertura.CLOSE);
             else
                 sensor.setEstado(EstadoSApertura.OPEN);
@@ -73,7 +76,16 @@ public class SensorApertura extends Sensor{
         }
 
 
-
         return sensor;
+    }
+
+    @Override
+    public int getEstadoDrawable() {
+        if (getEstado() == EstadoSApertura.CLOSE) {
+            return R.drawable.closed_door;
+        }else if (getEstado() == EstadoSApertura.OPEN){
+            return R.drawable.open_door;
+        }
+        return R.drawable.disconected;
     }
 }

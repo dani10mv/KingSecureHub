@@ -49,11 +49,12 @@ public class MainActivity extends AppCompatActivity {
 
     private SensorListAdapter mSensorAdapter;
     private ActuadorListAdapter mActuadorAdapter;
-    private Queue<JsonRequest> requests = new LinkedList<>();
+
+    private  RequestController requestController = RequestController.getInstance();
+
 
     private RequestQueue requestQueue;
-    private List<Sensor> sensores = new ArrayList<>();
-    private List<Actuador> actuadores = new ArrayList<>();
+    private Casa casa= new Casa();
 
 
     @Override
@@ -72,28 +73,9 @@ public class MainActivity extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(getApplicationContext());
 
 
-        lvActuadores.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        if (getIntent().hasExtra("casa")) {
 
-                Actuador actuador = (Actuador) adapterView.getItemAtPosition(i);
-
-                Intent intent = new Intent(MainActivity.this, UpdateActivity.class);
-                intent.putExtra("actuador", actuador);
-                intent.putExtra("sensores", (Serializable) sensores);
-                intent.putExtra("actuadores", (Serializable) actuadores);
-
-                startActivity(intent);
-
-            }
-        });
-
-
-        if (getIntent().hasExtra("sensores")) {
-
-            sensores = (List<Sensor>) getIntent().getSerializableExtra("sensores");
-
-            actuadores = (List<Actuador>) getIntent().getSerializableExtra("actuadores");
+            casa = (Casa) getIntent().getSerializableExtra("casa");
 
         } else {
             getSensoresApertura();
@@ -101,22 +83,24 @@ public class MainActivity extends AppCompatActivity {
             getActuadores();
         }
 
+
+
         if (getIntent().hasExtra("updateSensor")) {
+
             Sensor updateSensor = (Sensor) getIntent().getSerializableExtra("updateSensor");
             JsonRequest req = getupdateSensorRequest(updateSensor);
-            requests.add(req);
+            requestController.addRequest(req);
         } else if (getIntent().hasExtra("updateActuador")) {
             Actuador updateActuador = (Actuador) getIntent().getSerializableExtra("updateActuador");
             updateActuadorRequest(updateActuador);
         }
 
 
-        System.out.println(sensores.size());
 
-        mSensorAdapter = new SensorListAdapter(this, R.layout.simple_device, sensores);
+        mSensorAdapter = new SensorListAdapter(this, R.layout.simple_device, casa.getSensores());
         lvSensores.setAdapter(mSensorAdapter);
 
-        mActuadorAdapter = new ActuadorListAdapter(this, R.layout.simple_device, actuadores);
+        mActuadorAdapter = new ActuadorListAdapter(this, R.layout.simple_device, casa.getActuadores());
         lvActuadores.setAdapter(mActuadorAdapter);
 
 
@@ -133,18 +117,34 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, UpdateActivity.class);
                 intent.putExtra("sensor", sensor);
-                intent.putExtra("sensores", (Serializable) sensores);
-                intent.putExtra("actuadores", (Serializable) actuadores);
+                intent.putExtra("casa", (Serializable) casa);
                 intent.putExtra("position", i);
                 startActivity(intent);
 
             }
         });
 
-        if (getIntent() == null) {
-            System.out.println("creamos hilo");
-            RequestController rq = new RequestController(this, context, mActuadorAdapter, mSensorAdapter, requests);
-            Thread t = new RequestThread(rq);
+        lvActuadores.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                Actuador actuador = (Actuador) adapterView.getItemAtPosition(i);
+
+                Intent intent = new Intent(MainActivity.this, UpdateActivity.class);
+                intent.putExtra("actuador", actuador);
+                intent.putExtra("casa",(Serializable) casa);
+
+                startActivity(intent);
+
+            }
+        });
+
+
+
+        if (getIntent().getExtras()== null) {
+            //First run only
+            requestController = new RequestController(this, context, mActuadorAdapter, mSensorAdapter);
+            Thread t = new RequestThread(requestController);
             t.start();
         }
 
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                                 System.out.println(name);
 
                                 SensorApertura sensorApertura = SensorApertura.fromJson(device);
-                                sensores.add(sensorApertura);
+                                casa.addSensor(sensorApertura);
 
                             }
                         } catch (JSONException e) {
@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                                 System.out.println(name);
 
                                 SensorMovimiento sensorMovimiento = SensorMovimiento.fromJson(device);
-                                sensores.add(sensorMovimiento);
+                                casa.addSensor(sensorMovimiento);
 
                             }
                         } catch (JSONException e) {
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
                                 System.out.println(name);
 
                                 Actuador actuador = Actuador.fromJson(device);
-                                actuadores.add(actuador);
+                                casa.addActuador(actuador);
 
                             }
                         } catch (JSONException e) {
@@ -310,8 +310,8 @@ public class MainActivity extends AppCompatActivity {
     public void onClickOnAddSensor(View view) {
 
         Intent i = new Intent(this, AddDeviceActivity.class);
-        i.putExtra("sensores", (Serializable) sensores);
-        i.putExtra("actuadores", (Serializable) actuadores);
+        i.putExtra("casa", (Serializable) casa);
+
         i.putExtra("isSensor", true);
         startActivity(i);
 
@@ -320,8 +320,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClickOnAddActuador(View view) {
 
         Intent i = new Intent(this, AddDeviceActivity.class);
-        i.putExtra("sensores", (Serializable) sensores);
-        i.putExtra("actuadores", (Serializable) actuadores);
+        i.putExtra("casa", (Serializable) casa);
         i.putExtra("isSensor", false);
         startActivity(i);
 
@@ -341,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
                             for (int i = 0; i < response.length(); i++) {
                                 String codigoActuador = response.getString(i);
                                 Actuador actuador = null;
-                                for (Actuador a : actuadores) {
+                                for (Actuador a : casa.getActuadores()) {
                                     if (a.getCodigo().equals(codigoActuador)) {
                                         actuador = a;
                                         break;
@@ -404,9 +403,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
 
                         int pos = 0;
-                        for (Actuador a : actuadores) {
+                        for (Actuador a : casa.getActuadores()) {
                             if (a.getCodigo().equals(actuador.getCodigo())) {
-                                actuadores.set(pos, actuador);
+                                casa.updateActuador(actuador);
                                 mActuadorAdapter.notifyDataSetChanged();
                                 return;
                             }

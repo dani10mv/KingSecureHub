@@ -34,11 +34,11 @@ import java.util.List;
 
 public class AddDeviceActivity extends AppCompatActivity {
     private Context context ;
-    private List<Sensor> sensores;
-    private List<Actuador> actuadores;
+
     private boolean isSensor;
    private RequestQueue requestQueue;
     private Button addButton, backButton;
+    private Casa casa;
     private EditText etName, etCode;
     private Spinner ssType;
     private TextView tvType;
@@ -53,9 +53,8 @@ public class AddDeviceActivity extends AppCompatActivity {
 
         requestQueue = Volley.newRequestQueue(context);
 
-        sensores = (List<Sensor>) getIntent().getSerializableExtra("sensores");
-        System.out.println("size de los sensores "+sensores.size());
-        actuadores = (List<Actuador>) getIntent().getSerializableExtra("actuadores");
+        casa = (Casa) getIntent().getSerializableExtra("casa");
+
         isSensor = getIntent().getBooleanExtra("isSensor", false);
 
         addButton = findViewById(R.id.btAddFinal);
@@ -84,7 +83,7 @@ public class AddDeviceActivity extends AppCompatActivity {
 
         DeviceFactory factory = new DeviceFactory();
 
-        Intent i = new Intent(this, MainActivity.class);
+
 
         if (!checkEntryValid()) {
 
@@ -105,22 +104,22 @@ public class AddDeviceActivity extends AppCompatActivity {
                 sensor = factory.getSensorApertura(code, name, EstadoSApertura.DISCONNECTED);
 
             }
-            sensores.add(sensor);
+
             addNewSensorRequest(sensor);
-            i.putExtra("sensores",(Serializable) sensores);
+
 
         } else {
 
             Actuador actuador = factory.getActuador(code, name, EstadoActuador.DISCONNECTED);
 
-            actuadores.add(actuador);
+
             addNewActuadorRequest(actuador);
 
-            i.putExtra("actuadores",(Serializable) actuadores);
+
         }
 
 
-        startActivity(i);
+
 
 
     }
@@ -128,8 +127,7 @@ public class AddDeviceActivity extends AppCompatActivity {
     public void onClickBack(View view){
 
         Intent i = new Intent(this,MainActivity.class);
-        i.putExtra("sensores",(Serializable) sensores);
-        i.putExtra("actuadores",(Serializable) actuadores);
+        i.putExtra("casa",(Serializable) casa);
         startActivity(i);
     }
 
@@ -137,7 +135,7 @@ public class AddDeviceActivity extends AppCompatActivity {
 
         Toast t = Toast.makeText(this, "Codigo en uso", Toast.LENGTH_LONG);
 
-        for (Sensor s : sensores) {
+        for (Sensor s : casa.getSensores()) {
             if (code.equals(s.getCodigo())) {
                 t.show();
                 return false;
@@ -146,7 +144,7 @@ public class AddDeviceActivity extends AppCompatActivity {
         }
 
 
-        for (Actuador a : actuadores) {
+        for (Actuador a : casa.getActuadores()) {
             if (code.equals(a.getCodigo())) {
                 t.show();
                 return false;
@@ -176,7 +174,11 @@ public class AddDeviceActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
 
-                        Toast.makeText(context,"añadido= "+sensor.getNombre(),Toast.LENGTH_LONG).show();
+                        casa.addSensor(sensor);
+                        Intent i = new Intent(AddDeviceActivity.this, MainActivity.class);
+                        i.putExtra("casa",(Serializable) casa);
+                        startActivity(i);
+
                     }
                 },
                 new Response.ErrorListener() {
@@ -222,6 +224,11 @@ public class AddDeviceActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        casa.addActuador(actuador);
+                        Intent i = new Intent(AddDeviceActivity.this, MainActivity.class);
+                        i.putExtra("casa",(Serializable) casa);
+                        startActivity(i);
+
 
                         Toast.makeText(context,"añadido "+actuador.getNombre(),Toast.LENGTH_LONG).show();
                     }

@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,6 +33,7 @@ public class ActuadorListAdapter  extends ArrayAdapter<Actuador>   {
     private List<Actuador> lActuadores;
     private Context context;
     int resouceLayout;
+
 
 
 
@@ -61,6 +63,8 @@ public class ActuadorListAdapter  extends ArrayAdapter<Actuador>   {
         TextView state = view.findViewById(R.id.state);
         state.setText(device.getEstado().toString());
 
+        ImageView ivEstado = view.findViewById(R.id.ivEstado);
+        ivEstado.setImageResource(lActuadores.get(position).getEstadoDrawable());
         System.out.println("se esta acyualizando las cosas ");
 
 

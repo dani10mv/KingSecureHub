@@ -2,6 +2,8 @@ package com.example.kingsecurehub.modelo;
 
 import androidx.annotation.NonNull;
 
+import com.example.kingsecurehub.R;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -81,5 +83,15 @@ public class Actuador extends Dispositivo {
                 "nombre="+getNombre()+"\n"+
                 "codigo="+getCodigo()+"\n"+
                 '}';
+    }
+
+    @Override
+    public int getEstadoDrawable() {
+        if(getEstado()==EstadoActuador.OFF){
+            return R.drawable.off;
+        }else if(getEstado()==EstadoActuador.ON){
+            return R.drawable.on;
+        }
+        return R.drawable.disconected;
     }
 }

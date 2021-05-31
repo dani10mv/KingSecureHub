@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,6 +65,9 @@ public class SensorListAdapter  extends ArrayAdapter<Sensor> {
         name.setText(device.getNombre());
 
         TextView state = view.findViewById(R.id.state);
+
+        ImageView ivEstado = view.findViewById(R.id.ivEstado);
+        ivEstado.setImageResource(lSensores.get(position).getEstadoDrawable());
 
         if(device.getTipoSensor().equals("movimiento")) {
             SensorMovimiento s = (SensorMovimiento) device;

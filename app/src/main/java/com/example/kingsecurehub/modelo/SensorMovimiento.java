@@ -1,5 +1,7 @@
 package com.example.kingsecurehub.modelo;
 
+import com.example.kingsecurehub.R;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -68,4 +70,13 @@ public class SensorMovimiento extends Sensor {
     }
 
 
+    @Override
+    public int getEstadoDrawable() {
+        if(getEstado()==EstadoSMovimiento.NO_MOTION){
+            return R.drawable.no_motion;
+        }else if (getEstado()==EstadoSMovimiento.MOTION_DETECTED){
+            return R.drawable.motion_detected;
+        }
+        return R.drawable.disconected;
+    }
 }

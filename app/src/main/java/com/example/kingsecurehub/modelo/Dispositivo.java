@@ -1,5 +1,6 @@
 package com.example.kingsecurehub.modelo;
 
+import com.example.kingsecurehub.R;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -37,6 +38,11 @@ public abstract class Dispositivo implements Serializable {
 
     public int getEstadoInt(){
         return 0;
+    }
+
+
+    public int getEstadoDrawable(){
+        return R.drawable.disconected;
     }
 
 }

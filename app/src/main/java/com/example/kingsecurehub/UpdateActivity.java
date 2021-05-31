@@ -48,8 +48,7 @@ public class UpdateActivity extends AppCompatActivity {
     private boolean isSensor;
 
 
-    private List<Sensor> sensores;
-    private List<Actuador> actuadores;
+   private Casa casa;
     private int position;
 
 
@@ -79,8 +78,8 @@ public class UpdateActivity extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(context);
 
 
-        sensores = (List<Sensor>) getIntent().getSerializableExtra("sensores");
-        actuadores = (List<Actuador>) getIntent().getSerializableExtra("actuadores");
+        casa = (Casa) getIntent().getSerializableExtra("casa");
+
         position= getIntent().getIntExtra("position",-1);
 
         isSensor=false;
@@ -108,6 +107,8 @@ public class UpdateActivity extends AppCompatActivity {
             isSensor=false;
             Actuador actuador=(Actuador) getIntent().getSerializableExtra("actuador");
             device=actuador;
+
+            //no se puede cambiar manualmente el estado
             spEstado.setVisibility(View.INVISIBLE);
             tvEstado.setVisibility(View.INVISIBLE);
 
@@ -132,7 +133,7 @@ public class UpdateActivity extends AppCompatActivity {
                 SensorApertura newSensor = (SensorApertura) getIntent().getSerializableExtra("sensor");
                 newSensor.setEstado(estado);
                 newSensor.setNombre(etName.getText().toString());
-                sensores.set(position,newSensor);
+                casa.updateSensor(newSensor);
                 sensor=newSensor;
 
 
@@ -141,7 +142,7 @@ public class UpdateActivity extends AppCompatActivity {
                 SensorMovimiento sensorMovimiento = (SensorMovimiento) getIntent().getSerializableExtra("sensor");
                 sensorMovimiento.setEstado(estado);
                 sensorMovimiento.setNombre(etName.getText().toString());
-                sensores.set(position,sensorMovimiento);
+                casa.updateSensor(sensorMovimiento);
                 sensor=sensorMovimiento;
             }
             i.putExtra("updateSensor",sensor);
@@ -153,8 +154,8 @@ public class UpdateActivity extends AppCompatActivity {
 
             i.putExtra("updateActuador",(Serializable) actuador);
         }
-        i.putExtra("sensores",(Serializable) sensores);
-        i.putExtra("actuadores",(Serializable) actuadores);
+        i.putExtra("casa",(Serializable) casa);
+
 
         startActivity(i);
 
@@ -170,8 +171,8 @@ public class UpdateActivity extends AppCompatActivity {
     public void onClickBack(View view){
 
         Intent i = new Intent(this,MainActivity.class);
-        i.putExtra("sensores",(Serializable) sensores);
-        i.putExtra("actuadores",(Serializable) actuadores);
+        i.putExtra("casa",(Serializable) casa);
+
         startActivity(i);
 
     }
