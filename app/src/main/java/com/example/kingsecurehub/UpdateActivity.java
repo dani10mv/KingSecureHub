@@ -95,26 +95,31 @@ public class UpdateActivity extends AppCompatActivity {
             device=sensor;
 
             isSensor=true;
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                    this, android.R.layout.simple_spinner_item, spinnerArray);
 
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-            spEstado.setAdapter(adapter);
 
         }else//es actuador
         {
             isSensor=false;
+
             Actuador actuador=(Actuador) getIntent().getSerializableExtra("actuador");
+            spinnerArray = actuador.getEstados();
             device=actuador;
 
             //no se puede cambiar manualmente el estado
-            spEstado.setVisibility(View.INVISIBLE);
-            tvEstado.setVisibility(View.INVISIBLE);
 
         }
 
         etName.setText(device.getNombre());
+
+
+
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                this, android.R.layout.simple_spinner_item, spinnerArray);
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spEstado.setAdapter(adapter);
+
 
 
 
@@ -149,8 +154,9 @@ public class UpdateActivity extends AppCompatActivity {
 
         }else{ //actuador
             Actuador actuador=(Actuador) getIntent().getSerializableExtra("actuador");
-
+            EstadoActuador estado = EstadoActuador.valueOf(spEstado.getSelectedItem().toString());
             actuador.setNombre(etName.getText().toString());
+            actuador.setEstado(estado);
 
             i.putExtra("updateActuador",(Serializable) actuador);
         }

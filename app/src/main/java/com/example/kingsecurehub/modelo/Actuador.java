@@ -8,6 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Actuador extends Dispositivo {
 
@@ -84,6 +86,15 @@ public class Actuador extends Dispositivo {
                 "codigo="+getCodigo()+"\n"+
                 '}';
     }
+
+    public List<String> getEstados(){
+        List<String> estados  = new ArrayList<>();
+        for(EstadoActuador e : EstadoActuador.values()){
+            estados.add(e.toString());
+        }
+        return estados;
+    }
+
 
     @Override
     public int getEstadoDrawable() {
